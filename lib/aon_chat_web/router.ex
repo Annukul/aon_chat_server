@@ -20,6 +20,25 @@ defmodule AonChatWeb.Router do
     get "/", PageController, :home
   end
 
+  pipeline :jwt_authenticated do
+    plug AonChatWeb.AuthPipeline
+  end
+
+  scope "/api/v1", AonChatWeb.Api.V1 do
+    pipe_through [:api]
+    # User authentication
+    post "/sign-up", AuthController, :sign_up
+    post "/sign-in", AuthController, :sign_in
+    post "/reset-password", AuthController, :reset_password_request
+    post "/reset-password/:token", AuthController, :change_password
+  end
+
+  scope "/api/v1", AonChatWeb.Api.V1 do
+    pipe_through [:api, :jwt_authenticated]
+
+    get "/me", AuthController, :index_user
+  end
+
   # Other scopes may use custom stacks.
   # scope "/api", AonChatWeb do
   #   pipe_through :api
